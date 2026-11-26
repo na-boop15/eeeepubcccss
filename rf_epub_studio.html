@@ -235,6 +235,8 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
 .page-row.tp-illust .pr-badge{background:var(--wine-tint);color:var(--wine);}
 .page-row .pr-title{flex:1;min-width:0;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .page-row .pr-move{display:flex;gap:4px;flex:0 0 auto;}
+.page-row.pr-group{cursor:pointer;background:var(--paper-deep);}
+.page-row.pr-child{margin-left:14px;}
 
 /* status banners */
 .banner{border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;line-height:1.6;margin-bottom:12px;}
@@ -304,19 +306,30 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
 
   <main>
 
-  <!-- 1. 표지 -->
+  <!-- 1. 원고 -->
   <div class="card">
-    <div class="sec-h"><span class="snum">1</span><h2>표지</h2></div>
-    <div class="sec-desc">표지로 쓸 이미지를 넣어주세요. JPG/PNG/WebP를 지원해요.</div>
-    <div class="dropzone" id="coverDrop">
+    <div class="sec-h"><span class="snum">1</span><h2>원고</h2></div>
+    <div class="sec-desc">텍본 파일을 올리거나 붙여넣으면 회차를 자동으로 나눠줄게요. (1화 · 제1장 · 번외/외전 · 프롤로그/에필로그 등 자동 인식)</div>
+    <div class="dropzone" id="txtDrop">
       <div class="dz-icon">＋</div>
-      <div class="dz-t">표지 이미지 선택 또는 드래그</div>
-      <div class="dz-s">권장 비율 1:1.45 (예: 1200×1740px)</div>
+      <div class="dz-t">TXT 파일 선택 또는 드래그</div>
+      <div class="dz-s">여러 권 파일을 한번에 올려도 순서대로 이어붙여요</div>
     </div>
-    <input type="file" id="coverInput" accept="image/*" style="display:none">
-    <div class="cover-preview" id="coverPreviewWrap" style="display:none;">
-      <img id="coverThumb" class="cover-thumb" src="">
-      <div class="cover-meta" id="coverMeta"></div>
+    <input type="file" id="txtInput" accept=".txt,text/plain" multiple style="display:none">
+    <div id="txtFileList" style="margin-top:10px;"></div>
+    <details style="margin-top:10px;">
+      <summary style="font-size:12px;color:var(--ink-faint);cursor:pointer;">직접 붙여넣기</summary>
+      <div style="margin-top:10px;">
+        <textarea id="pasteText" placeholder="본문을 여기에 붙여넣어주세요" style="min-height:140px;"></textarea>
+        <button class="btn btn-soft btn-sm" style="margin-top:8px;" onclick="addPastedText()">추가하기</button>
+      </div>
+    </details>
+    <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="parseManuscript()">회차 나누기</button>
+
+    <div id="chResultWrap" style="display:none;margin-top:18px;">
+      <div class="sub-h" style="display:flex;align-items:center;">회차 목록<span class="sec-note" id="chCount" style="margin-left:auto;font-weight:400;font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);"></span></div>
+      <div id="chWarnBanner"></div>
+      <div class="ch-list" id="chList"></div>
     </div>
   </div>
 
@@ -354,30 +367,19 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
     </div>
   </div>
 
-  <!-- 3. 원고 -->
+  <!-- 3. 표지 -->
   <div class="card">
-    <div class="sec-h"><span class="snum">3</span><h2>원고</h2></div>
-    <div class="sec-desc">텍본 파일을 올리거나 붙여넣으면 회차를 자동으로 나눠줄게요. (1화 · 제1장 · 번외/외전 · 프롤로그/에필로그 등 자동 인식)</div>
-    <div class="dropzone" id="txtDrop">
+    <div class="sec-h"><span class="snum">3</span><h2>표지</h2></div>
+    <div class="sec-desc">표지로 쓸 이미지를 넣어주세요. JPG/PNG/WebP를 지원해요.</div>
+    <div class="dropzone" id="coverDrop">
       <div class="dz-icon">＋</div>
-      <div class="dz-t">TXT 파일 선택 또는 드래그</div>
-      <div class="dz-s">여러 권 파일을 한번에 올려도 순서대로 이어붙여요</div>
+      <div class="dz-t">표지 이미지 선택 또는 드래그</div>
+      <div class="dz-s">권장 비율 1:1.45 (예: 1200×1740px)</div>
     </div>
-    <input type="file" id="txtInput" accept=".txt,text/plain" multiple style="display:none">
-    <div id="txtFileList" style="margin-top:10px;"></div>
-    <details style="margin-top:10px;">
-      <summary style="font-size:12px;color:var(--ink-faint);cursor:pointer;">직접 붙여넣기</summary>
-      <div style="margin-top:10px;">
-        <textarea id="pasteText" placeholder="본문을 여기에 붙여넣어주세요" style="min-height:140px;"></textarea>
-        <button class="btn btn-soft btn-sm" style="margin-top:8px;" onclick="addPastedText()">추가하기</button>
-      </div>
-    </details>
-    <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="parseManuscript()">회차 나누기</button>
-
-    <div id="chResultWrap" style="display:none;margin-top:18px;">
-      <div class="sub-h" style="display:flex;align-items:center;">회차 목록<span class="sec-note" id="chCount" style="margin-left:auto;font-weight:400;font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);"></span></div>
-      <div id="chWarnBanner"></div>
-      <div class="ch-list" id="chList"></div>
+    <input type="file" id="coverInput" accept="image/*" style="display:none">
+    <div class="cover-preview" id="coverPreviewWrap" style="display:none;">
+      <img id="coverThumb" class="cover-thumb" src="">
+      <div class="cover-meta" id="coverMeta"></div>
     </div>
   </div>
 
@@ -512,6 +514,18 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
       <p style="margin:0 0 8px;">그는 나지막이 중얼거렸다. <span id="pvQuote">'차라리 처음부터 만나지 않았더라면.'</span></p>
       <p id="pvBracketWrap" style="margin:0;">그날의 <span id="pvBracket">[비 오던 골목, 우산을 나눠 쓰던 순간]</span>이 문득 떠올랐다.</p>
     </div>
+
+    <hr class="sub-divider">
+    <div class="sub-h">자동 줄바꿈</div>
+    <div class="sec-desc" style="padding-left:0;margin-bottom:10px;">큰따옴표(" " “ ”)·작은따옴표(‘ ’ ' ')로 묶인 대화·회상이 앞뒤 서술에 붙어 있을 때, 따로 한 문단으로 떼어줘요. 평소엔 꺼두고 필요할 때만 켜세요.</div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="tl">대화·회상 자동 줄바꿈</div><div class="td">서술 문장 뒤/앞에 붙은 따옴표 문장을 분리해요</div></div>
+      <label class="switch"><input type="checkbox" id="inAutoBreak"><span class="track"><span class="knob"></span></span></label>
+    </div>
+    <div class="preview-box">
+      <div class="pv-tag">PREVIEW</div>
+      <div id="pvAutoBreak"></div>
+    </div>
   </div>
 
   <!-- 5. 삽화 -->
@@ -533,11 +547,11 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
     <div class="sec-desc">실제 책에 들어갈 순서예요. 화살표로 순서를 바꿀 수 있어요.</div>
     <div class="toggle-row">
       <div class="toggle-info"><div class="tl">표지 페이지</div></div>
-      <label class="switch"><input type="checkbox" id="inIncludeCoverPage" checked><span class="track"><span class="knob"></span></span></label>
+      <label class="switch"><input type="checkbox" id="inIncludeCoverPage"><span class="track"><span class="knob"></span></span></label>
     </div>
     <div class="toggle-row">
       <div class="toggle-info"><div class="tl">목차 페이지</div></div>
-      <label class="switch"><input type="checkbox" id="inIncludeTocPage" checked><span class="track"><span class="knob"></span></span></label>
+      <label class="switch"><input type="checkbox" id="inIncludeTocPage"><span class="track"><span class="knob"></span></span></label>
     </div>
     <div class="page-list" id="pageList" style="margin-top:14px;"></div>
   </div>
@@ -618,10 +632,12 @@ var S = {
     chColor:'#1a5fa8', chSize:1.1, chMT:1.5, chMB:6,
     sceneReplace:true, sceneMark:'* * *', sceneColor:'#1a5fa8', sceneColorAuto:true, sceneSize:1.1, sceneMargin:2,
     commentOn:true, commentFS:83, commentColor:'#666666', commentColorDark:'#aaaaaa',
-    quoteOn:true, bracketOn:true, quoteItalic:true, quoteIndent:false, quoteColor:'#7c6670'
+    quoteOn:true, bracketOn:true, quoteItalic:true, quoteIndent:false, quoteColor:'#7c6670',
+    autoBreak:false
   },
   illust:[],             // {id,name,bytes,ext,dataUrl,caption,pos:{type,chId}}
   pages:[],              // {type:'cover'|'toc'|'chapter'|'illust', ref}
+  pagesChOpen:false,     // 페이지 구성에서 회차 목록 펼침 여부
   seq:1
 };
 
@@ -697,7 +713,7 @@ function buildAutoFilename(){
     } else if(nums.length===1){
       range = ' '+nums[0]+'화';
     } else {
-      range = ' '+included.length+'화';
+      range = ' '+included.filter(function(c){return !c.preface;}).length+'화';
     }
   }
   var complete = S.meta.complete ? ' (완)' : '';
@@ -798,7 +814,8 @@ function parseManuscript(){
   var fullText = S.ms.files.map(function(f){return f.text;}).join('\n\n');
   if(!fullText.trim()){ toast('먼저 원고를 넣어주세요'); return; }
 
-  var parsed = parseCh(fullText.replace(/\r\n/g,'\n'));
+  var normText = fullText.replace(/\r\n/g,'\n');
+  var parsed = parseCh(normText);
   if(!parsed.length){
     toast('회차를 찾지 못했어요 (1화 / 제1장 / 번외 등 형식을 확인해주세요)');
     return;
@@ -820,9 +837,18 @@ function parseManuscript(){
     return { id:nid(), title:p.title, lines:p.content.split('\n'), include:true, num:p.num };
   });
 
+  // 첫 회차 앞에 줄거리·작품소개 같은 글이 있으면 버리지 않고 맨 앞 페이지로 보존
+  var firstIdx = normText.search(CH_RE);
+  var prefaceText = firstIdx>0 ? normText.slice(0, firstIdx) : '';
+  var prefaceLines = prefaceText.split('\n').filter(function(l){ return !/^\s*={3,}\s*$/.test(l); });
+  if(prefaceLines.join('').trim()){
+    S.chapters.unshift({ id:nid(), title:'줄거리', lines:prefaceLines, include:true, num:null, preface:true });
+  }
+
   renderChapterList();
   document.getElementById('chResultWrap').style.display='block';
-  var msg = S.chapters.length+'개 회차로 나눴어요';
+  var hasPreface = S.chapters.length && S.chapters[0].preface;
+  var msg = (S.chapters.length-(hasPreface?1:0))+'개 회차로 나눴어요'+(hasPreface?' (줄거리 포함)':'');
   if(dupWarn.length) msg += ' (중복 '+dupWarn.length+'개 정리)';
   toast(msg);
   refreshAll();
@@ -831,7 +857,7 @@ function parseManuscript(){
 function renderChapterList(){
   var wrap=document.getElementById('chList');
   wrap.innerHTML='';
-  document.getElementById('chCount').textContent = S.chapters.length+'개';
+  document.getElementById('chCount').textContent = S.chapters.filter(function(c){return !c.preface;}).length+'개'+(S.chapters.length&&S.chapters[0].preface?' + 줄거리':'');
 
   var included = S.chapters.filter(function(c){return c.include;});
   var missing = getMissingNums(included);
@@ -845,7 +871,7 @@ function renderChapterList(){
     var row=document.createElement('div');
     row.className='ch-item'+(c.include?'':' excluded');
     row.innerHTML =
-      '<div class="ch-num">'+(c.num!=null?String(c.num).padStart(4,'0'):'----')+'</div>'+
+      '<div class="ch-num">'+(c.preface?'소개':(c.num!=null?String(c.num).padStart(4,'0'):'----'))+'</div>'+
       '<div class="ch-body">'+
         '<input type="text" value="'+esc(c.title)+'" data-id="'+c.id+'" class="ch-title-input">'+
         '<div class="ch-meta"><span>'+charCount.toLocaleString()+'자</span></div>'+
@@ -929,6 +955,62 @@ document.getElementById('sceneCustom').addEventListener('input', function(){
   renderStylePreviews();
 });
 
+document.getElementById('inAutoBreak').addEventListener('change', function(){ S.style.autoBreak=this.checked; renderStylePreviews(); });
+
+/* ── 자동 줄바꿈: 서술에 붙은 따옴표 대화·회상을 별도 문단으로 분리 ── */
+var DLG_ATTACHED_RE=/^(?:이?라(?:고|며|는|니|면서)|하(?:고|며|는|면서))/;
+function dlgDepthAt(text,pos){
+  var h=text.slice(0,pos), d=0, i;
+  for(i=0;i<h.length;i++){
+    var ch=h.charAt(i);
+    if(ch==='('||ch==='['||ch==='（'||ch==='【') d++;
+    else if(ch===')'||ch===']'||ch==='）'||ch==='】') d--;
+  }
+  return d;
+}
+function dlgBeforeOk(text,s){
+  var before=text.slice(0,s);
+  if(!before.trim()) return true;
+  if(!/\s$/.test(before)) return /[”’"']$/.test(before);
+  var t=before.replace(/\s+$/,'');
+  return /[.!?…~。！？][”’"')\]」』）]*$/.test(t) || /[”’"'」』]$/.test(t);
+}
+/* 따옴표 뒤가 문장 경계인지 검사. 경계면 {ok:true,end:자를 위치}, 아니면 {ok:false} */
+function dlgAfter(text,e){
+  var rest=text.slice(e);
+  var m=rest.match(/^([.!?…~]*)(\s*)/);
+  var end=e+m[1].length;
+  var tail=rest.slice(m[0].length);
+  if(!tail) return {ok:true,end:end};
+  if(/^[“‘"']/.test(tail)) return {ok:true,end:end};
+  if(!m[2]) return {ok:false};
+  if(DLG_ATTACHED_RE.test(tail)) return {ok:false};
+  return {ok:true,end:end};
+}
+function splitDialogue(text){
+  var dq=(text.match(/"/g)||[]).length, sq=(text.match(/'/g)||[]).length;
+  var alts=['“[^”\\n]{1,800}”','‘[^’\\n]{1,800}’'];
+  if(dq>0 && dq%2===0) alts.push('"[^"\\n]{1,800}"');
+  if(sq>0 && sq%2===0) alts.push("'[^'\\n]{1,300}'");
+  var re=new RegExp(alts.join('|'),'g');
+  var cuts=[], m;
+  while((m=re.exec(text))){
+    var st=m.index, en=st+m[0].length;
+    if(dlgDepthAt(text,st)>0) continue;
+    if(!dlgBeforeOk(text,st)) continue;
+    var af=dlgAfter(text,en);
+    if(!af.ok) continue;
+    if(text.slice(0,st).trim()) cuts.push(st);
+    if(text.slice(af.end).trim()) cuts.push(af.end);
+  }
+  if(!cuts.length) return [text];
+  cuts=cuts.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(x,y){return x-y;});
+  var out=[], prev=0;
+  cuts.forEach(function(c){ var part=text.slice(prev,c).trim(); if(part) out.push(part); prev=c; });
+  var last=text.slice(prev).trim(); if(last) out.push(last);
+  return out.length?out:[text];
+}
+
 function sceneIconChoices(){
   return ['* * *','✦ ✦ ✦','◆ ◆ ◆','❖ ❖ ❖','❧ ❧ ❧','◇ ◇ ◇','· · ·','─────','☙ ❧'];
 }
@@ -986,6 +1068,21 @@ function renderStylePreviews(){
   var cm=document.getElementById('pvComment');
   cm.style.fontSize=st.commentFS+'%'; cm.style.color=st.commentColor;
 
+  var ab=document.getElementById('pvAutoBreak');
+  if(ab){
+    var sample='그는 한참을 서성이다가 문을 열었다. "대태태." 안에서 인기척이 들렸다. 그는 낮게 중얼거렸다. ‘설마 아직 안 일어났나.’';
+    var parts = st.autoBreak ? splitDialogue(sample) : [sample];
+    ab.innerHTML='';
+    parts.forEach(function(t){
+      var pp=document.createElement('p');
+      pp.textContent=t;
+      pp.style.lineHeight=st.lineHeight;
+      pp.style.textIndent = st.indent ? st.indentEm+'em' : '0';
+      pp.style.margin=st.pMarginTop+'em 0 '+st.pMarginBottom+'em';
+      ab.appendChild(pp);
+    });
+  }
+
   var q=document.getElementById('pvQuote');
   q.style.color = st.quoteOn ? st.quoteColor : 'inherit';
   q.style.fontStyle = (st.quoteOn && st.quoteItalic) ? 'italic' : 'normal';
@@ -1024,10 +1121,15 @@ function illustPositionOptions(selected, chId){
     {v:'afterCover', l:'표지 바로 뒤'},
     {v:'end', l:'맨 마지막'}
   ];
+  function chLbl(c,i){
+    if(c.preface) return '줄거리';
+    if(c.num!=null && c.num>0) return c.num+'화';
+    return (c.title||'').slice(0,14) || (i+1)+'번째';
+  }
   var chOpts = S.chapters.map(function(c,i){
-    return {v:'beforeCh:'+c.id, l:(i+1)+'화 시작 전'};
+    return {v:'beforeCh:'+c.id, l:chLbl(c,i)+' 시작 전'};
   }).concat(S.chapters.map(function(c,i){
-    return {v:'afterCh:'+c.id, l:(i+1)+'화 끝'};
+    return {v:'afterCh:'+c.id, l:chLbl(c,i)+' 끝'};
   }));
   var all=opts.concat(chOpts);
   return all.map(function(o){
@@ -1118,7 +1220,7 @@ function pageLabel(p){
   if(p.type==='toc') return {badge:'목차', title:'목차 페이지'};
   if(p.type==='chapter'){
     var c=S.chapters.find(function(x){return x.id===p.ref;});
-    return {badge:'회차', title: c ? c.title : '(삭제됨)'};
+    return {badge:(c&&c.preface)?'소개':'회차', title: c ? c.title : '(삭제됨)'};
   }
   if(p.type==='illust'){
     var im=S.illust.find(function(x){return x.id===p.ref;});
@@ -1127,26 +1229,51 @@ function pageLabel(p){
   return {badge:'', title:''};
 }
 
+function appendPageRow(wrap,p,i,isChild){
+  var lab=pageLabel(p);
+  var row=document.createElement('div');
+  row.className='page-row'+(p.type==='illust'?' tp-illust':'')+(isChild?' pr-child':'');
+  row.innerHTML =
+    '<span class="pr-badge">'+lab.badge+'</span>'+
+    '<span class="pr-title">'+esc(lab.title)+'</span>'+
+    '<span class="pr-move">'+
+      '<button class="btn-icon" data-i="'+i+'" data-act="up">↑</button>'+
+      '<button class="btn-icon" data-i="'+i+'" data-act="down">↓</button>'+
+    '</span>';
+  wrap.appendChild(row);
+}
+
 function renderPageList(){
   var wrap=document.getElementById('pageList');
   wrap.innerHTML='';
-  S.pages.forEach(function(p,i){
-    var lab=pageLabel(p);
-    var row=document.createElement('div');
-    row.className='page-row'+(p.type==='illust'?' tp-illust':'');
-    row.innerHTML =
-      '<span class="pr-badge">'+lab.badge+'</span>'+
-      '<span class="pr-title">'+esc(lab.title)+'</span>'+
-      '<span class="pr-move">'+
-        '<button class="btn-icon" data-i="'+i+'" data-act="up">↑</button>'+
-        '<button class="btn-icon" data-i="'+i+'" data-act="down">↓</button>'+
-      '</span>';
-    wrap.appendChild(row);
-  });
+  var i=0;
+  while(i<S.pages.length){
+    var p=S.pages[i];
+    if(p.type==='chapter'){
+      var j=i;
+      while(j<S.pages.length && S.pages[j].type==='chapter') j++;
+      var open=!!S.pagesChOpen;
+      var head=document.createElement('div');
+      head.className='page-row pr-group';
+      head.setAttribute('data-act','toggle-ch');
+      head.innerHTML =
+        '<span class="pr-badge">회차</span>'+
+        '<span class="pr-title">회차 '+(j-i)+'개</span>'+
+        '<button class="btn-icon" data-act="toggle-ch" aria-label="'+(open?'접기':'펼치기')+'">'+(open?'▾':'▸')+'</button>';
+      wrap.appendChild(head);
+      if(open){ for(var k=i;k<j;k++) appendPageRow(wrap,S.pages[k],k,true); }
+      i=j;
+    } else {
+      appendPageRow(wrap,p,i,false);
+      i++;
+    }
+  }
 }
 document.getElementById('pageList').addEventListener('click', function(e){
-  var b=e.target.closest('button'); if(!b) return;
-  var i=+b.dataset.i, act=b.dataset.act;
+  var b=e.target.closest('[data-act]'); if(!b) return;
+  var act=b.dataset.act;
+  if(act==='toggle-ch'){ S.pagesChOpen=!S.pagesChOpen; renderPageList(); return; }
+  var i=+b.dataset.i;
   if(act==='up' && i>0){ var t=S.pages[i-1]; S.pages[i-1]=S.pages[i]; S.pages[i]=t; }
   if(act==='down' && i<S.pages.length-1){ var t2=S.pages[i+1]; S.pages[i+1]=S.pages[i]; S.pages[i]=t2; }
   renderPageList();
@@ -1159,12 +1286,12 @@ document.getElementById('pageList').addEventListener('click', function(e){
 function refreshSummary(){
   document.getElementById('sumTitle').textContent = S.meta.title || '(제목 없음)';
   document.getElementById('sumAuthor').textContent = S.meta.author || '(작가 미상)';
-  document.getElementById('sumChapters').textContent = S.chapters.filter(function(c){return c.include;}).length+'개';
+  document.getElementById('sumChapters').textContent = S.chapters.filter(function(c){return c.include && !c.preface;}).length+'개';
   document.getElementById('sumIllust').textContent = S.illust.length+'장';
   var warn=document.getElementById('buildWarnings');
   warn.innerHTML='';
   if(!S.chapters.length){
-    warn.innerHTML='<div class="banner banner-warn">원고가 아직 없어요. 3번에서 회차를 나눠주세요.</div>';
+    warn.innerHTML='<div class="banner banner-warn">원고가 아직 없어요. 1번에서 회차를 나눠주세요.</div>';
   } else if(!S.meta.coverBytes){
     warn.innerHTML='<div class="banner banner-info">표지 이미지가 없어요. 표지 없이도 만들 수 있어요.</div>';
   }
@@ -1203,9 +1330,10 @@ function lineToXhtml(line){
   if(S.style.sceneReplace && SCENE_RE.test(line)){
     return '<p class="scene-break">'+esc(S.style.sceneMark)+'</p>';
   }
-  var escaped = esc(trimmed);
-  escaped = wrapInline(escaped);
-  return '<p>'+escaped+'</p>';
+  var pieces = S.style.autoBreak ? splitDialogue(trimmed) : [trimmed];
+  return pieces.map(function(t){
+    return '<p>'+wrapInline(esc(t))+'</p>';
+  }).join('\n');
 }
 
 function chapterBodyHtml(c){

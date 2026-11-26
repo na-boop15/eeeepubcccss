@@ -1345,7 +1345,7 @@ function buildCss(){
   var st=S.style;
   return '@charset "utf-8";\n\n'+
 'html, body { margin:0; padding:0; }\n'+
-'body { color:#2a1e24; background:#fffdfb; word-break:keep-all; -epub-line-break:normal; }\n'+
+'body { color:#2a1e24; background:#fffdfb; word-break:normal; overflow-wrap:break-word; -epub-line-break:normal; }\n'+
 'p { line-height:'+st.lineHeight+'; margin:'+st.pMarginTop+'em 0 '+st.pMarginBottom+'em;'+
     (st.indent ? ' text-indent:'+st.indentEm+'em;' : ' text-indent:0;')+' }\n\n'+
 '.cover-page { min-height:100vh; margin:0; padding:0; text-align:center; page-break-after:always; }\n'+
